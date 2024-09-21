@@ -1,6 +1,44 @@
 import React from "react";
 import styled from "styled-components";
 
+const StyledInput = styled.input`
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+    
+
+    &:focus {
+        border-color: #007BFF;
+        outline: none;
+    }
+`;
+
+const StyledButton = styled.button`
+    width: 100%;
+    background-color: #007BFF;
+    color: white;
+    padding: 10px;
+    margin: 10px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: #0056b3;
+    }
+
+    &:active {
+        background-color: #004080;
+    }
+`;
+
 const Modal = styled.div`
     display: block;
     position: fixed;
@@ -42,48 +80,57 @@ const CloseButton = styled.span`
     cursor: pointer;
 `;
 
-
-
 class Post extends React.Component {
     state = {
         post: [],
         titulo: "",
         descricao: "",
         imagem: "",
-        isModalOpen: false, 
+        isModalOpen: false,
         modal: [],
-    }
+    };
+
+    onKeyDownEnter = (event) => {
+        if (event.key === "Enter") {
+            this.onClickPostar();
+        }
+    };
 
     onClickPostar = () => {
         let titulo = this.state.titulo;
         let descricao = this.state.descricao;
+        let imagem = this.state.imagem;
+
+        const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
 
         if (titulo.length > 50) {
             alert("Seu título tem mais que 50 caracteres");
-            return; 
+            return;
         } else if (titulo === "") {
             alert("Seu título não foi preenchido");
             return;
         } else if (descricao === "") {
             alert("Sua descrição não foi preenchida");
             return;
+        } else if (imagem !== "" && !urlRegex.test(imagem)) {
+            alert("A URL da imagem não é válida");
+            return;
         }
 
-        let imagem = this.state.imagem;
         let id = Math.random();
 
         let post = [
             ...this.state.post,
-            { titulo: titulo, descricao: descricao, imagem: imagem, id: id }
+            { titulo: titulo, descricao: descricao, imagem: imagem, id: id },
         ];
-   
+
         this.setState({
             post: post,
             descricao: "",
             titulo: "",
             imagem: "",
         });
-    }
+    };
 
     deletarPost = (idPost) => {
         const postsCopia = [...this.state.post];
@@ -91,48 +138,45 @@ class Post extends React.Component {
             return idPost !== postDel.id;
         });
         this.setState({ post: postsFiltrados });
-    }
+    };
 
     onChangeTitulo = (event) => {
         this.setState({
-            titulo: event.target.value
+            titulo: event.target.value,
         });
-    }
+    };
 
     onChangeDescricao = (event) => {
         this.setState({
-            descricao: event.target.value
+            descricao: event.target.value,
         });
-    }
+    };
 
     onChangeImagem = (event) => {
         this.setState({
-            imagem: event.target.value
+            imagem: event.target.value,
         });
-    }
+    };
 
     onClickLerMais = (titulo, descricao, imagem) => {
-        let modal = [
-            { titulo: titulo, descricao: descricao, imagem: imagem }
-        ];
-        this.setState({ 
-            isModalOpen: true,
-            modal: modal
-         });
-    }
+        let modal = [{ titulo: titulo, descricao: descricao, imagem: imagem }];
+        this.setState({ isModalOpen: true, modal: modal });
+    };
 
     fecharModal = () => {
-        this.setState({ 
-            isModalOpen: false, 
-            modal: [] 
+        this.setState({
+            isModalOpen: false,
+            modal: [],
         });
-    }
+    };
 
     render() {
         let postagens = this.state.post.map((posts) => {
             let imagemPost;
             if (posts.imagem === "") {
-                imagemPost = <img src="https://picsum.photos/id/1/200/300" alt="" />;
+                imagemPost = (
+                    <img src="https://picsum.photos/id/1/200/300" alt="" />
+                );
             } else {
                 imagemPost = <img src={posts.imagem} alt="" />;
             }
@@ -142,46 +186,85 @@ class Post extends React.Component {
                 let LeiaMais = posts.descricao.slice(0, 100);
                 descricaoPost = (
                     <div>
-                        <p>{LeiaMais}...</p> 
-                        <button onClick={() => this.onClickLerMais(posts.titulo, posts.descricao, imagemPost)}>Leia Mais</button>
+                        <p>{LeiaMais}...</p>
+                        <button
+                            onClick={() =>
+                                this.onClickLerMais(
+                                    posts.titulo,
+                                    posts.descricao,
+                                    imagemPost
+                                )
+                            }
+                        >
+                            Leia Mais
+                        </button>
                     </div>
                 );
             } else {
-                descricaoPost = <p>{posts.descricao}</p>
+                descricaoPost = <p>{posts.descricao}</p>;
             }
 
-            return ( 
+            return (
                 <div key={posts.id}>
                     <h2>{posts.titulo}</h2>
                     {descricaoPost}
                     {imagemPost}
-                    <button onClick={() => {this.deletarPost(posts.id);}}>Deletar</button>
+                    <button
+                        onClick={() => {
+                            this.deletarPost(posts.id);
+                        }}
+                    >
+                        Deletar
+                    </button>
                 </div>
             );
         });
 
         let modalExibido = this.state.modal.map((modal) => {
-            return ( 
-            <div>
-                <h1>{modal.titulo}</h1>
-                <ModalDescription>{modal.descricao}</ModalDescription>
-                {modal.imagem}
-            </div>
+            return (
+                <div key={modal.titulo}>
+                    <h1>{modal.titulo}</h1>
+                    <ModalDescription>{modal.descricao}</ModalDescription>
+                    {modal.imagem}
+                </div>
             );
         });
 
         return (
             <>
                 <div>{postagens}</div>
-                <input type='text' name="titulo" onChange={this.onChangeTitulo} value={this.state.titulo} placeholder='Digite seu título' />
-                <input type='text' name="descricao" onChange={this.onChangeDescricao} value={this.state.descricao} placeholder='Digite sua descrição' />
-                <input type='url' name="imagem" onChange={this.onChangeImagem} value={this.state.imagem} placeholder="Insira sua imagem"></input>
-                <button onClick={this.onClickPostar}>Postar</button>
+                <StyledInput
+                    type="text"
+                    name="titulo"
+                    onChange={this.onChangeTitulo}
+                    value={this.state.titulo}
+                    placeholder="Digite seu título com no máximo 50 caracteres"
+                    onKeyDown={this.onKeyDownEnter}
+                />
+                <StyledInput
+                    type="text"
+                    name="descricao"
+                    onChange={this.onChangeDescricao}
+                    value={this.state.descricao}
+                    placeholder="Digite sua descrição"
+                    onKeyDown={this.onKeyDownEnter}
+                />
+                <StyledInput
+                    type="url"
+                    name="imagem"
+                    onChange={this.onChangeImagem}
+                    value={this.state.imagem}
+                    placeholder="Insira sua imagem por meio de uma URL válida"
+                    onKeyDown={this.onKeyDownEnter}
+                />
+                <StyledButton onClick={this.onClickPostar}>Postar</StyledButton>
 
                 {this.state.isModalOpen && (
                     <Modal>
                         <ModalContent>
-                            <CloseButton onClick={this.fecharModal}>&times;</CloseButton>
+                            <CloseButton onClick={this.fecharModal}>
+                                &times;
+                            </CloseButton>
                             {modalExibido}
                         </ModalContent>
                     </Modal>
