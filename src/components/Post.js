@@ -1,84 +1,19 @@
 import React from "react";
-import styled from "styled-components";
-
-const StyledInput = styled.input`
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 2px solid #ccc;
-    border-radius: 4px;
-    font-size: 16px;
-    box-sizing: border-box;
-    transition: border-color 0.3s ease;
-    
-
-    &:focus {
-        border-color: #007BFF;
-        outline: none;
-    }
-`;
-
-const StyledButton = styled.button`
-    width: 100%;
-    background-color: #007BFF;
-    color: white;
-    padding: 10px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-
-    &:hover {
-        background-color: #0056b3;
-    }
-
-    &:active {
-        background-color: #004080;
-    }
-`;
-
-const Modal = styled.div`
-    display: block;
-    position: fixed;
-    z-index: 1;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-`;
-
-const ModalContent = styled.div`
-    background-color: white;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    border-radius: 8px;
-    overflow-y: auto;
-    max-height: 80vh;
-    position: relative;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-`;
-
-const ModalDescription = styled.p`
-    white-space: normal;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-`;
-
-const CloseButton = styled.span`
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-`;
+import {
+    StyledInput,
+    StyledButton,
+    Modal,
+    ModalConteudo,
+    ModalDescricao,
+    FecharModalButton,
+    PostContainer,
+    PostImagem,
+    PostConteudo,
+    PostTitulo,
+    PostDescricao,
+    LeiaMaisbutton,
+    DeletarButton,
+} from "./PostStyles";
 
 class Post extends React.Component {
     state = {
@@ -86,7 +21,7 @@ class Post extends React.Component {
         titulo: "",
         descricao: "",
         imagem: "",
-        isModalOpen: false,
+        modalAberto: false,
         modal: [],
     };
 
@@ -160,34 +95,33 @@ class Post extends React.Component {
 
     onClickLerMais = (titulo, descricao, imagem) => {
         let modal = [{ titulo: titulo, descricao: descricao, imagem: imagem }];
-        this.setState({ isModalOpen: true, modal: modal });
+        this.setState({ modalAberto: true, modal: modal });
     };
 
     fecharModal = () => {
         this.setState({
-            isModalOpen: false,
+            modalAberto: false,
             modal: [],
         });
     };
+    
 
     render() {
         let postagens = this.state.post.map((posts) => {
-            let imagemPost;
-            if (posts.imagem === "") {
-                imagemPost = (
-                    <img src="https://picsum.photos/id/1/200/300" alt="" />
-                );
-            } else {
-                imagemPost = <img src={posts.imagem} alt="" />;
-            }
+            let imagemPost = posts.imagem ? (
+                <PostImagem src={posts.imagem} alt="" />
+            ) : (
+                <PostImagem src="https://picsum.photos/id/1/200/300" alt="" />
+            );
 
             let descricaoPost;
-            if (posts.descricao.length > 100) {
-                let LeiaMais = posts.descricao.slice(0, 100);
+            if (posts.descricao.length > 500) {
+                let LeiaMais = posts.descricao.slice(0, 500);
                 descricaoPost = (
                     <div>
-                        <p>{LeiaMais}...</p>
-                        <button
+                        <PostDescricao>{LeiaMais}...</PostDescricao>
+                        <LeiaMaisbutton
+                            
                             onClick={() =>
                                 this.onClickLerMais(
                                     posts.titulo,
@@ -197,26 +131,28 @@ class Post extends React.Component {
                             }
                         >
                             Leia Mais
-                        </button>
+                        </LeiaMaisbutton>
                     </div>
                 );
             } else {
-                descricaoPost = <p>{posts.descricao}</p>;
+                descricaoPost = <PostDescricao>{posts.descricao}</PostDescricao>;
             }
 
             return (
-                <div key={posts.id}>
-                    <h2>{posts.titulo}</h2>
-                    {descricaoPost}
+                <PostContainer key={posts.id}>
                     {imagemPost}
-                    <button
-                        onClick={() => {
-                            this.deletarPost(posts.id);
-                        }}
-                    >
-                        Deletar
-                    </button>
-                </div>
+                    <PostConteudo>
+                        <PostTitulo>{posts.titulo}</PostTitulo>
+                        {descricaoPost}
+                        <DeletarButton
+                            onClick={() => {
+                                this.deletarPost(posts.id);
+                            }}
+                        >
+                            Deletar
+                        </DeletarButton>
+                    </PostConteudo>
+                </PostContainer>
             );
         });
 
@@ -224,7 +160,7 @@ class Post extends React.Component {
             return (
                 <div key={modal.titulo}>
                     <h1>{modal.titulo}</h1>
-                    <ModalDescription>{modal.descricao}</ModalDescription>
+                    <ModalDescricao>{modal.descricao}</ModalDescricao>
                     {modal.imagem}
                 </div>
             );
@@ -259,14 +195,14 @@ class Post extends React.Component {
                 />
                 <StyledButton onClick={this.onClickPostar}>Postar</StyledButton>
 
-                {this.state.isModalOpen && (
+                {this.state.modalAberto && (
                     <Modal>
-                        <ModalContent>
-                            <CloseButton onClick={this.fecharModal}>
+                        <ModalConteudo>
+                            <FecharModalButton onClick={this.fecharModal}>
                                 &times;
-                            </CloseButton>
+                            </FecharModalButton>
                             {modalExibido}
-                        </ModalContent>
+                        </ModalConteudo>
                     </Modal>
                 )}
             </>
